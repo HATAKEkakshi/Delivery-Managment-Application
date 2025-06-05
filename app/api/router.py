@@ -8,6 +8,7 @@ router = APIRouter(prefix="/shipment",tags=["Shipment"])
 
 @router.get("/", response_model=ShipmentRead)
 async def get_shipment(id: int, service: ServiceDep):
+    print("here is your argument:",await service.get(id))
     shipment = await service.get(id)
     if not shipment:
         raise HTTPException(status_code=404, detail="Shipment not found")
