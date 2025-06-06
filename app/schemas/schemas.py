@@ -1,5 +1,5 @@
 from typing import Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, EmailStr, Field
 from random import randint
 from enum import Enum
 from datetime import datetime
@@ -28,4 +28,11 @@ class ShipmentRead(BaseShipment):
 class ShipmentUpdate(BaseModel):
     status: ShipmentStatus | None =Field(default=None)
     estimated_delivery_date: datetime| None =Field(default=None)
-
+class BaseSeller(BaseModel):
+    name: str
+    email: EmailStr
+class SellerRead(BaseSeller):
+    pass
+    # Optional: Include other fields if needed, like created_at, etc.
+class SellerCreate(BaseSeller):
+    password:str

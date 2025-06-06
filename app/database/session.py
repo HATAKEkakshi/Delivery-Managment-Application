@@ -4,7 +4,7 @@ from sqlmodel import SQLModel
 from typing import Annotated
 from fastapi import Depends
 
-from database.config import settings
+from app.database.config import settings
 
 engine = create_async_engine(
     url=settings.POSTGRES_URL,

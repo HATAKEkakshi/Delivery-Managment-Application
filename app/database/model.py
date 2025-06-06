@@ -1,6 +1,7 @@
 from sqlmodel import SQLModel,Field
-from app.schemas import ShipmentStatus
+from app.schemas.schemas import ShipmentStatus
 from datetime import datetime
+from pydantic import EmailStr
 class Shipment(SQLModel,table=True):
     __tablename__="shipment"
     id :int=Field(default=None,primary_key=True)
@@ -9,3 +10,8 @@ class Shipment(SQLModel,table=True):
     destination:int
     status:ShipmentStatus
     estimated_delivery_date:datetime 
+class Seller(SQLModel,table=True):
+    id: int = Field(default=None, primary_key=True)
+    name:str
+    email:EmailStr
+    password_hash:str

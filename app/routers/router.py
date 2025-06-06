@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from app.api.dependencies import ServiceDep
-from app.schemas import ShipmentCreate, ShipmentRead, ShipmentUpdate
+from app.schemas.schemas import ShipmentCreate, ShipmentRead, ShipmentUpdate
 
 router = APIRouter(prefix="/shipment",tags=["Shipment"])
 
