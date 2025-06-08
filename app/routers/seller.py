@@ -20,13 +20,3 @@ async def login_seller(request_form:Annotated[OAuth2PasswordRequestForm,Depends(
         "access_token":token,
         "type":"jwt"
     }
-@seller.get("/dashboard")
-async def get_dashboard(token:Annotated[str,Depends(oauth2_scheme)],session:SessionDep)->Seller:
-    data= decode_acess_token(token)
-    if data is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid access token",
-        )
-    seller= await session.get(Seller, data["user"]["id"])
-    return seller
