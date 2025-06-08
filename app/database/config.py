@@ -2,7 +2,11 @@
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from urllib.parse import quote_plus
-
+_base_config=SettingsConfigDict(
+        env_file="/Users/hemantkumar/Developer/backend/Fastapi-backend/.env",  # ✅ make sure .env is in root or adjust path
+        env_ignore_empty=True,
+        extra="ignore"
+    )
 class DatabaseSettings(BaseSettings):
     POSTGRES_SERVER: str
     POSTGRES_DB: str
@@ -19,11 +23,12 @@ class DatabaseSettings(BaseSettings):
             f"@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
 
-    model_config = SettingsConfigDict(
-        env_file="./.env",  # ✅ make sure .env is in root or adjust path
-        env_ignore_empty=True,
-        extra="ignore"
-    )
+    model_config = _base_config
+class SecuritySettings(BaseSettings):
+    JWT_SECRET: str
+    JWT_ALGORITHM: str
 
+    model_config=_base_config
 # ✅ Exported settings object to use elsewhere
-settings = DatabaseSettings()
+db_settings = DatabaseSettings()
+security_settings = SecuritySettings()

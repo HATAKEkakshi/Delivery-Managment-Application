@@ -1,10 +1,15 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from scalar_fastapi import get_scalar_api_reference
+from database.session import create_db_tables
+from fastapi import APIRouter
+from routers.router import router
+from routers.seller import seller
 
-from app.routers.master import master_router
-from app.database.session import create_db_tables
 
+master_router = APIRouter()
+master_router.include_router(router)
+master_router.include_router(seller)
 
 @asynccontextmanager
 async def lifespan_handler(app: FastAPI):

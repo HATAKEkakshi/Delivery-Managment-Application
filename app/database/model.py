@@ -1,5 +1,5 @@
 from sqlmodel import SQLModel,Field
-from app.schemas.schemas import ShipmentStatus
+from schemas.schemas import ShipmentStatus
 from datetime import datetime
 from pydantic import EmailStr
 class Shipment(SQLModel,table=True):

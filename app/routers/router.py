@@ -1,13 +1,13 @@
 # app/api/routes/shipment.py
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from app.api.dependencies import ServiceDep
-from app.schemas.schemas import ShipmentCreate, ShipmentRead, ShipmentUpdate
-
+from api.dependencies import ServiceDep
+from schemas.schemas import ShipmentCreate, ShipmentRead, ShipmentUpdate
+from api.dependencies import SellerDep
 router = APIRouter(prefix="/shipment",tags=["Shipment"])
 
 @router.get("/", response_model=ShipmentRead)
-async def get_shipment(id: int, service: ServiceDep):
+async def get_shipment(id: int, service: ServiceDep,_:SellerDep):
     print("here is your argument:",await service.get(id))
     shipment = await service.get(id)
     if not shipment:
@@ -15,7 +15,7 @@ async def get_shipment(id: int, service: ServiceDep):
     return shipment
 
 @router.post("/", response_model=ShipmentRead)
-async def submit_shipment(shipment: ShipmentCreate, service: ServiceDep):
+async def submit_shipment(shipment: ShipmentCreate, service: ServiceDep,seller:SellerDep):
     return await service.add(shipment)
 
 @router.patch("/", response_model=ShipmentRead)
