@@ -7,13 +7,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.security import oauth2_scheme
 from services.shipment import ShipmentService
 from database.session import get_session
+from database.redis import is_jti_blacklisted
 
 # Type alias for the async session dependency
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 #Acess token data dep
-def get_acess_token(token:Annotated[str,Depends(oauth2_scheme)])->dict:
+async def get_acess_token(token:Annotated[str,Depends(oauth2_scheme)])->dict:
     data= decode_acess_token(token)
-    if data is None:
+    if data is None or await is_jti_blacklisted(data["jti"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired access token",

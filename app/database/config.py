@@ -14,6 +14,8 @@ class DatabaseSettings(BaseSettings):
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
 
+    REDIS_HOST: str
+    REDIS_PORT: int
     # ✅ Properly encode password for safe URL construction
     @property
     def POSTGRES_URL(self) -> str:
