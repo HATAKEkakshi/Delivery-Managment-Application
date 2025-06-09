@@ -31,5 +31,5 @@ class SellerService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Email or password is incorrect"
             )
-        token = generate_access_token(data={"user": {"name": seller.name, "email": seller.email, "id": seller.id}})
+        token = generate_access_token(data={"user": {"name": seller.name, "email": seller.email, "id": str(seller.id)}})
         return token

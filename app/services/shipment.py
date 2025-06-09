@@ -2,7 +2,7 @@
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
-from database.model import Shipment
+from database.model import Seller, Shipment
 from schemas.schemas import ShipmentCreate, ShipmentRead, ShipmentStatus, ShipmentUpdate
 from datetime import datetime, timedelta
 
@@ -13,11 +13,12 @@ class ShipmentService:
     async def get(self, id: int) -> Shipment | None:
         return await self.session.get(Shipment, id)
 
-    async def add(self, shipment_create: ShipmentCreate) -> Shipment:
+    async def add(self, shipment_create: ShipmentCreate,seller:Seller) -> Shipment:
         new_shipment = Shipment(
             **shipment_create.model_dump(),
             status=ShipmentStatus.placed,
-            estimated_delivery_date=datetime.now() + timedelta(days=3)
+            estimated_delivery_date=datetime.now() + timedelta(days=3),
+            seller_id=seller.id , # Assuming Shipment model has a seller_id field
         )
         self.session.add(new_shipment)
         await self.session.commit()

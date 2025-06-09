@@ -1,4 +1,5 @@
 from typing import Annotated
+from uuid import UUID
 from database.model import Seller
 from services.seller import SellerService
 from fastapi import Depends,HTTPException, status
@@ -22,7 +23,7 @@ async def get_acess_token(token:Annotated[str,Depends(oauth2_scheme)])->dict:
     return data
 ##Logged in seller
 async def get_current_seller(token_data:Annotated[dict,Depends(get_acess_token)],session:SessionDep):
-    return await session.get(Seller, token_data["user"]["id"])
+    return await session.get(Seller, UUID(token_data["user"]["id"]))
 # Function to return an instance of ShipmentService with a session
 def get_shipment_service(session: SessionDep) -> ShipmentService:
     return ShipmentService(session)

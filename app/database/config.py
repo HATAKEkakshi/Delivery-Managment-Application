@@ -1,5 +1,4 @@
 # database/config.py
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from urllib.parse import quote_plus
 _base_config=SettingsConfigDict(
@@ -15,7 +14,7 @@ class DatabaseSettings(BaseSettings):
     POSTGRES_PASSWORD: str
 
     REDIS_HOST: str
-    REDIS_PORT: int
+    REDIS_PORT: str
     # ✅ Properly encode password for safe URL construction
     @property
     def POSTGRES_URL(self) -> str:

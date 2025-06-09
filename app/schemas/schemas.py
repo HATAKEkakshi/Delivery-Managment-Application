@@ -1,10 +1,7 @@
-from typing import Any
-from pydantic import BaseModel, EmailStr, Field
-from random import randint
+from pydantic import BaseModel, EmailStr
+from uuid import UUID
 from enum import Enum
 from datetime import datetime
-def random_destination() -> int:
-    return randint(11000, 11999)
 
 class ShipmentStatus(str, Enum):
     placed = "placed"
@@ -12,27 +9,32 @@ class ShipmentStatus(str, Enum):
     delivered = "delivered"
     out_for_delivery = "out_for_delivery"
 
+# Base Schemas
+class BaseSeller(BaseModel):
+    name: str
+    email: EmailStr
+
+class SellerRead(BaseSeller):
+    pass
+
+class SellerCreate(BaseSeller):
+    password: str
+
 class BaseShipment(BaseModel):
-    content: str = Field(..., max_length=30)
-    weight: float = Field(..., le=25, ge=1)
-    destination: int = Field(default_factory=random_destination)
+    content: str
+    weight: float
+    destination: int
 
 class ShipmentCreate(BaseShipment):
     pass
 
-class ShipmentRead(BaseShipment):
-    status: ShipmentStatus
-    # Optional: Include `id` in read schema if you want to expose it in responses
-    id: int
-    estimated_delivery_date: datetime
 class ShipmentUpdate(BaseModel):
-    status: ShipmentStatus | None =Field(default=None)
-    estimated_delivery_date: datetime| None =Field(default=None)
-class BaseSeller(BaseModel):
-    name: str
-    email: EmailStr
-class SellerRead(BaseSeller):
-    pass
-    # Optional: Include other fields if needed, like created_at, etc.
-class SellerCreate(BaseSeller):
-    password:str
+    status: ShipmentStatus | None = None
+    estimated_delivery_date: datetime | None = None
+
+class ShipmentRead(BaseShipment):
+    id: UUID
+    status: ShipmentStatus
+    estimated_delivery_date: datetime
+    seller: "SellerRead"  # Forward reference to SellerRead
+
