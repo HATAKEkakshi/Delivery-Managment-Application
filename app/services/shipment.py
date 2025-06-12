@@ -1,17 +1,20 @@
 # app/services/shipment.py
-
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import select
+from services.delivery_partner import DeliveryPartnerService
+from services.base import BaseService
 from database.model import Seller, Shipment
 from schemas.schemas import ShipmentCreate, ShipmentRead, ShipmentStatus, ShipmentUpdate
 from datetime import datetime, timedelta
 
-class ShipmentService:
-    def __init__(self, session: AsyncSession):
-        self.session = session
+class ShipmentService(BaseService):
+    def __init__(self, session: AsyncSession,partner_service=DeliveryPartnerService):
+        super().__init__(Shipment, session)
+        self.partner_service = partner_service
 
-    async def get(self, id: int) -> Shipment | None:
-        return await self.session.get(Shipment, id)
+    async def get(self, id: UUID) -> Shipment | None:
+        return await self._get( id)
 
     async def add(self, shipment_create: ShipmentCreate,seller:Seller) -> Shipment:
         new_shipment = Shipment(
@@ -20,10 +23,9 @@ class ShipmentService:
             estimated_delivery_date=datetime.now() + timedelta(days=3),
             seller_id=seller.id , # Assuming Shipment model has a seller_id field
         )
-        self.session.add(new_shipment)
-        await self.session.commit()
-        await self.session.refresh(new_shipment)
-        return new_shipment
+        partner=await self.partner_service.assign_shipment(new_shipment)
+        new_shipment.id = partner.id
+        return await self._add(new_shipment)
 
     async def update(self, id: int, shipment_update: dict) -> Shipment:
         shipment = await self.session.get(Shipment, id)
@@ -33,14 +35,9 @@ class ShipmentService:
         for key, value in shipment_update.items():
             setattr(shipment, key, value)
 
-        self.session.add(shipment)
-        await self.session.commit()
-        await self.session.refresh(shipment)
-        return shipment
+        return await self._update(shipment)
+         
 
     async def delete(self, id: int) -> None:
-        shipment = await self.session.get(Shipment, id)
-        if not shipment:
-            raise Exception("Shipment not found")
-        await self.session.delete(shipment)
-        await self.session.commit()
+        await self._delete(await self.get(id))
+

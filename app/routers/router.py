@@ -2,7 +2,7 @@
 
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
-from api.dependencies import ServiceDep
+from api.dependencies import DeliveryPartnerServiceDep, ServiceDep
 from schemas.schemas import ShipmentCreate, ShipmentRead, ShipmentUpdate
 from api.dependencies import SellerDep
 router = APIRouter(prefix="/shipment",tags=["Shipment"])
@@ -20,13 +20,13 @@ async def submit_shipment(shipment: ShipmentCreate, service: ServiceDep,seller:S
     return await service.add(shipment,seller)
 
 @router.patch("/", response_model=ShipmentRead)
-async def patch_shipment(id: int, shipment_update: ShipmentUpdate, service: ServiceDep):
+async def patch_shipment(id: UUID, shipment_update: ShipmentUpdate, service: ServiceDep,partner:DeliveryPartnerServiceDep):
     update = shipment_update.model_dump(exclude_none=True)
     if not update:
         raise HTTPException(status_code=400, detail="No fields to update")
     return await service.update(id, update)
 
 @router.delete("/")
-async def delete_shipment(id: int, service: ServiceDep):
+async def delete_shipment(id: UUID, service: ServiceDep):
     await service.delete(id)
     return {"message": "Shipment deleted successfully"}

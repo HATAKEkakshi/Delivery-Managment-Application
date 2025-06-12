@@ -5,12 +5,12 @@ from database.session import create_db_tables
 from fastapi import APIRouter
 from routers.router import router
 from routers.seller import seller
-
+from routers.delivery_partner import partner
 
 master_router = APIRouter()
 master_router.include_router(router)
 master_router.include_router(seller)
-
+master_router.include_router(partner)
 @asynccontextmanager
 async def lifespan_handler(app: FastAPI):
     await create_db_tables()
