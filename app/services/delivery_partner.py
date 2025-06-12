@@ -38,3 +38,4 @@ class DeliveryPartnerService(UserService):
 
     async def generate_token(self, email, password):
         return await self._generate_token(email, password)
+         
