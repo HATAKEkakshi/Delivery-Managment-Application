@@ -1,12 +1,11 @@
 from fastapi.security import OAuth2PasswordRequestForm
 from typing_extensions import Annotated
 from fastapi import APIRouter, Depends,HTTPException, status
-from api.dependencies import SellerServiceDep, SessionDep, get_acess_token
+from api.dependencies import SellerServiceDep, SessionDep, get_seller_acess_token
 from database.model import Seller
 from schemas.schemas import SellerRead
 from schemas.schemas import SellerCreate
-from core.security import oauth2_scheme
-from api.dependencies import get_acess_token
+from core.security import oauth2_scheme_seller
 from database.redis import add_jti_to_blacklist
 seller=APIRouter(prefix="/seller",tags=["Seller"])
 
@@ -22,7 +21,7 @@ async def login_seller(request_form:Annotated[OAuth2PasswordRequestForm,Depends(
         "type":"jwt"
     }
 @seller.get("/logout")
-async def logout_seller(token_data:Annotated[dict,Depends(get_acess_token)]):
+async def logout_seller(token_data:Annotated[dict,Depends(get_seller_acess_token)]):
     await add_jti_to_blacklist(token_data["jti"])
     return{
         "message":"Logged out successfully"
