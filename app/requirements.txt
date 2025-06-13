@@ -1,0 +1,10 @@
+fastapi[all]
+redis
+passlib
+bcrypt
+pyjwt
+fastapi-mail
+sqlalchemy
+sqlmodel
+asyncpg
+greenlet

@@ -1,4 +1,5 @@
 # database/config.py
+from typing import Annotated
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from urllib.parse import quote_plus
 _base_config=SettingsConfigDict(
@@ -30,6 +31,20 @@ class SecuritySettings(BaseSettings):
     JWT_ALGORITHM: str
 
     model_config=_base_config
+class NotificationSettings(BaseSettings):
+    MAIL_USERNAME:str
+    MAIL_PASSWORD:str
+    MAIL_FROM:str
+    MAIL_FROM_NAME:str
+    MAIL_SERVER:str
+    MAIL_PORT:int
+    MAIL_STARTTLS:bool=True
+    MAIL_SSL_TLS:bool=False
+    USE_CREDENTIALS:bool=True
+    VALIDATE_CERTS: bool = True
+    model_config = _base_config
 # ✅ Exported settings object to use elsewhere
 db_settings = DatabaseSettings()
 security_settings = SecuritySettings()
+notification_settings= NotificationSettings()
+print("🔍 Loaded Notification Settings from .env:", NotificationSettings().model_dump())

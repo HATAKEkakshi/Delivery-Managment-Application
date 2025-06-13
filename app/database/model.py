@@ -52,6 +52,9 @@ class Shipment(SQLModel, table=True):
     destination: int
     status: ShipmentStatus
     created_at: datetime = Field(sa_column=Column(postgresql.TIMESTAMP, default=datetime.now))
+    
+    client_email_id:EmailStr |None
+    client_contact_phone:int|None
     estimated_delivery_date: datetime
 
     timeline: list["ShipmentEvent"] = Relationship(
