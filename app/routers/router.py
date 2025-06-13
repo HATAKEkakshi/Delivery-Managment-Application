@@ -24,9 +24,9 @@ async def patch_shipment(id: UUID, shipment_update: ShipmentUpdate, service: Ser
     update = shipment_update.model_dump(exclude_none=True)
     if not update:
         raise HTTPException(status_code=400, detail="No fields to update")
-    return await service.update(id, update)
+    return await service.update(id, shipment_update,partner)
 
-@router.delete("/")
-async def delete_shipment(id: UUID, service: ServiceDep):
-    await service.delete(id)
-    return {"message": "Shipment deleted successfully"}
+@router.get("/cancel",response_model=ShipmentRead)
+async def cancel_shipment(id: UUID, seller:SellerDep,service: ServiceDep):
+    return await service.cancel(id,seller)
+    

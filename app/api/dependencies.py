@@ -1,7 +1,8 @@
 from typing import Annotated
 from uuid import UUID
+from services.shipmentevent import ShipmentEventService
 from services.delivery_partner import DeliveryPartnerService
-from database.model import DeliveryPartner, Seller
+from database.model import DeliveryPartner, Seller, Shipment
 from services.seller import SellerService
 from fastapi import Depends,HTTPException, status
 from helper.utils import decode_acess_token
@@ -48,7 +49,7 @@ async def get_current_partner(token_data:Annotated[dict,Depends(get_partner_aces
     return partner
 # Function to return an instance of ShipmentService with a session
 def get_shipment_service(session: SessionDep) -> ShipmentService:
-    return ShipmentService(session,DeliveryPartnerService(session))
+    return ShipmentService(session,DeliveryPartnerService(session),ShipmentEventService(session))
 def get_seller_service(session: SessionDep) -> SellerService:
     return SellerService(session)
 def get_delivery_partner_service(session: SessionDep):
