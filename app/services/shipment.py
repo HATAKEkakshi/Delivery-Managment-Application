@@ -38,27 +38,40 @@ class ShipmentService(BaseService):
             status=ShipmentStatus.placed,
             description=f"Assigned to {partner.name}."
         )
-
         # No need to append or refresh timeline manually
-
         return shipment
 
-    async def update(self, id: UUID, shipment_update: ShipmentUpdate, partner: DeliveryPartner) -> Shipment:
-        shipment = await self.session.get(Shipment, id)
+    async def update(
+        self,
+        id: UUID,
+        shipment_update: ShipmentUpdate,
+        partner: DeliveryPartner,
+        partner_service: DeliveryPartnerService
+    ):
+        shipment = await self._get(id)
+        if shipment is None:
+            raise HTTPException(status_code=404, detail="Shipment not found")
+
         if shipment.delivery_partner_id != partner.id:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="You are not authorized to update this shipment."
-            )
-        update = shipment_update.model_dump(exclude_none=True)
-        if shipment_update.estimated_delivery_date:
-            shipment.estimated_delivery_date = shipment_update.estimated_delivery_date
-        if len(update) > 1 or not shipment_update.estimated_delivery_date:
+            raise HTTPException(status_code=403, detail="Not authorized to update this shipment")
+
+        # Apply update
+        for key, value in shipment_update.model_dump(exclude_unset=True).items():
+            if hasattr(shipment, key):
+                setattr(shipment, key, value)
+
+        # Optional: log event (status/location/description)
+        if shipment_update.status or shipment_update.location or shipment_update.description:
             await self.event_service.add(
-                shipment=shipment,
-                **update,
-            )
+            shipment=shipment,
+            location=shipment_update.location,
+            status=shipment_update.status or shipment.status,
+            description=shipment_update.description
+        )
+
         return await self._update(shipment)
+
+
 
     async def cancel(self, id: UUID, seller: Seller):
         shipment = await self.get(id)

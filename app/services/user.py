@@ -5,6 +5,7 @@ from helper.utils import generate_access_token
 from services.base import BaseService
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
+from fastapi import status,HTTPException
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 class UserService(BaseService):
         def __init__(self, model:User,session: AsyncSession):
@@ -24,7 +25,7 @@ class UserService(BaseService):
             user=await self._get_by_email(email)
             if user is None or not password_context.verify(password, user.password_hash):
                 raise HTTPException(
-                    status_code=user.HTTP_404_NOT_FOUND,
+                        status_code=status.HTTP_404_NOT_FOUND,
                         detail="Email or password is incorrect"
                 )
             return generate_access_token(data={"user": {"name": user.name, "email": user.email, "id": str(user.id)}})

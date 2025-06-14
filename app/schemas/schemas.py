@@ -41,13 +41,16 @@ class BaseShipment(BaseModel):
     destination: int
 
 class ShipmentCreate(BaseShipment):
-    pass
+    client_email_id: EmailStr 
+    client_contact_phone:int  | None = Field(default=None)
+    
 
 class ShipmentUpdate(BaseModel):
     location: int | None = Field(default=None)
-    descriprtion: str | None = Field(default=None)
+    description: str | None = Field(default=None)  # ✅ Fixed spelling here
     status: ShipmentStatus | None = None
     estimated_delivery_date: datetime | None = None
+
 
 class ShipmentRead(BaseShipment):
     id: UUID

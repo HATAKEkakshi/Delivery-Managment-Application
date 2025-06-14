@@ -13,7 +13,7 @@ async def send_message():
         message=MessageSchema(
             recipients=["hemant.kumardeveloper@gmail.com"],
             subject="Your Mail from fastship",
-            body="Yoi lets go you are going good",
+            body="Yoi lets go you are going to send a email",
             subtype=MessageType.plain,))
     print("Mail sent successfully")
 asyncio.run(send_message())
