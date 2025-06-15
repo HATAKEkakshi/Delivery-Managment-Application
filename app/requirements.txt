@@ -8,3 +8,4 @@ sqlalchemy
 sqlmodel
 asyncpg
 greenlet
+jinja2

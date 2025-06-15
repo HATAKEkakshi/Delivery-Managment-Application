@@ -1,20 +1,35 @@
 # app/api/routes/shipment.py
 
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, status
+from helper.utils import TEMPLATE_DIR
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from api.dependencies import DeliveryPartnerServiceDep, ServiceDep,DeliveryDep
 from schemas.schemas import ShipmentCreate, ShipmentRead, ShipmentUpdate
 from api.dependencies import SellerDep
 router = APIRouter(prefix="/shipment",tags=["Shipment"])
-
+templates=Jinja2Templates(TEMPLATE_DIR)
 @router.get("/", response_model=ShipmentRead)
-async def get_shipment(id: UUID, service: ServiceDep,_:SellerDep):
+async def get_shipment(id: UUID, service: ServiceDep):
     print("here is your argument:",await service.get(id))
     shipment = await service.get(id)
     if not shipment:
         raise HTTPException(status_code=404, detail="Shipment not found")
     return shipment
-
+@router.get("/track")
+async def get_tracking(id: UUID, service: ServiceDep,request:Request):
+    shipment=await service.get(id)
+    context=shipment.model_dump()
+    context["status"]=shipment.status
+    context["partner"]=shipment.delivery_partner.name
+    context["timeline"]=shipment.timeline
+    context["timeline"].reverse()
+    return templates.TemplateResponse(
+        request=request,
+        name="track.html",
+        context=context
+    )
 @router.post("/", response_model=ShipmentRead)
 async def submit_shipment(shipment: ShipmentCreate, service: ServiceDep,seller:SellerDep):
     return await service.add(shipment,seller)

@@ -7,11 +7,11 @@ from services.user import UserService
 
 
 class DeliveryPartnerService(UserService):
-    def __init__(self, session):
-        super().__init__(DeliveryPartner, session=session)  # DeliveryPartner is a subclass of User
+    def __init__(self, session,tasks):
+        super().__init__(DeliveryPartner, session=session,tasks=tasks)  # DeliveryPartner is a subclass of User
 
     async def add_delivery_partner(self, delivery_partner: DeliveryPartnerCreate):
-        return await self._add_user(delivery_partner.model_dump())
+        return await self._add_user(delivery_partner.model_dump(),"partner")
 
     async def get_delivery_partner_by_email(self, email):
         return await self._get_by_email(email)

@@ -27,6 +27,10 @@ async def update_delivery_partner(partner_update:DeliveryPartnerUpdate,partner:D
     if not update:
         raise HTTPException(status_code=400, detail="No fields to update")
     return await service.update(partner.sqlmodel_update(update))
+@partner.get("/verify")
+async def verify_seller_email(token:str,service:DeliveryPartnerServiceDep):
+    await service.verify_email(token)
+    return {"detail":"Email verified successfully"}
 @partner.get("/logout")
 async def logout_delivery_partner(token_data:Annotated[dict,Depends(get_partner_acess_token)]):
     await add_jti_to_blacklist(token_data["jti"])

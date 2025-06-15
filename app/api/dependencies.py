@@ -1,5 +1,6 @@
 from typing import Annotated
 from uuid import UUID
+from fastapi import BackgroundTasks
 from services.shipmentevent import ShipmentEventService
 from services.delivery_partner import DeliveryPartnerService
 from database.model import DeliveryPartner, Seller, Shipment
@@ -48,12 +49,12 @@ async def get_current_partner(token_data:Annotated[dict,Depends(get_partner_aces
         )
     return partner
 # Function to return an instance of ShipmentService with a session
-def get_shipment_service(session: SessionDep) -> ShipmentService:
-    return ShipmentService(session,DeliveryPartnerService(session),ShipmentEventService(session))
-def get_seller_service(session: SessionDep) -> SellerService:
-    return SellerService(session)
-def get_delivery_partner_service(session: SessionDep):
-    return DeliveryPartnerService(session)
+def get_shipment_service(session: SessionDep,tasks:BackgroundTasks) -> ShipmentService:
+    return ShipmentService(session,DeliveryPartnerService(session),ShipmentEventService(session,tasks))
+def get_seller_service(session: SessionDep,tasks:BackgroundTasks) -> SellerService:
+    return SellerService(session,tasks)
+def get_delivery_partner_service(session: SessionDep,tasks:BackgroundTasks):
+    return DeliveryPartnerService(session,tasks)
 # Type alias for injecting the ShipmentService
 ServiceDep = Annotated[ShipmentService, Depends(get_shipment_service)]
 

@@ -43,8 +43,13 @@ class NotificationSettings(BaseSettings):
     USE_CREDENTIALS:bool=True
     VALIDATE_CERTS: bool = True
     model_config = _base_config
+class AppSettings(BaseSettings):
+    APP_NAME:str="FastShip"
+    APP_DOMAIN:str="localhost:8000"
+
 # ✅ Exported settings object to use elsewhere
 db_settings = DatabaseSettings()
 security_settings = SecuritySettings()
 notification_settings= NotificationSettings()
+app_settings=AppSettings()
 print("🔍 Loaded Notification Settings from .env:", NotificationSettings().model_dump())
