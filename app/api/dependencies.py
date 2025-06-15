@@ -50,7 +50,7 @@ async def get_current_partner(token_data:Annotated[dict,Depends(get_partner_aces
     return partner
 # Function to return an instance of ShipmentService with a session
 def get_shipment_service(session: SessionDep,tasks:BackgroundTasks) -> ShipmentService:
-    return ShipmentService(session,DeliveryPartnerService(session),ShipmentEventService(session,tasks))
+    return ShipmentService(session,DeliveryPartnerService(session,tasks),ShipmentEventService(session,tasks))
 def get_seller_service(session: SessionDep,tasks:BackgroundTasks) -> SellerService:
     return SellerService(session,tasks)
 def get_delivery_partner_service(session: SessionDep,tasks:BackgroundTasks):

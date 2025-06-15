@@ -1,4 +1,6 @@
+from random import randint
 import time
+from database.redis import get_shipment_verification_code,add_shipment_verification_code
 from schemas.schemas import ShipmentStatus
 from database.model import Shipment, ShipmentEvent
 from services.base import BaseService
@@ -75,7 +77,15 @@ class ShipmentEventService(BaseService):
             case ShipmentStatus.out_for_delivery:
                 subject = "Shipment Out for Delivery"
                 template_name = "mail_out_for_delivery.html"
-
+                code=randint(100_000,999_999)
+                await add_shipment_verification_code(shipment.id,code)
+                if shipment.client_contact_phone:
+                    self.notification_service.send_sms(
+                        to=shipment.client_contact_phone,
+                        body=f"Your shipment {shipment.id} is out for delivery. Your verification code is: {code}"
+                    )
+                else:
+                    context["verification_code"] = code
             case ShipmentStatus.cancelled:
                 subject = "Shipment Cancelled"
                 template_name = "mail_cancelled.html"

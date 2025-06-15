@@ -55,7 +55,7 @@ class Shipment(SQLModel, table=True):
     created_at: datetime = Field(sa_column=Column(postgresql.TIMESTAMP, default=datetime.now))
     
     client_email_id:EmailStr |None
-    client_contact_phone:int|None
+    client_contact_phone:str|None
     estimated_delivery_date: datetime
 
     timeline: list["ShipmentEvent"] = Relationship(

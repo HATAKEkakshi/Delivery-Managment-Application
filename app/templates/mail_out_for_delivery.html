@@ -2,6 +2,9 @@
     <p>Hi</p>
     <p>Your Order is out for delivery
     </p>
+    {% if verification_code %}
+    <p>Share {{verification_code}} with delivery partner to receive your order</p>
+    {% endif%}
     <br>
     <p>Powered by FastShip</p>
 </body>

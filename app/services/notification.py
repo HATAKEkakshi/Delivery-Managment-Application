@@ -3,6 +3,8 @@ from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
 from database.config import notification_settings
 from fastapi import BackgroundTasks
 from helper.utils import TEMPLATE_DIR
+from twilio.rest import Client
+
 import asyncio
 
 class NotificationService:
@@ -10,9 +12,13 @@ class NotificationService:
         self.tasks = tasks
         self.fastmail = FastMail(
             ConnectionConfig(
-                **notification_settings.model_dump(),
+                **notification_settings.model_dump(exclude=["TWILIO_SID", "TWILIO_AUTH_TOKEN", "TWILIO_NUMBER"]),
                 TEMPLATE_FOLDER=TEMPLATE_DIR,
             )
+        )
+        self.twilio_client = Client(
+            notification_settings.TWILIO_SID,
+            notification_settings.TWILIO_AUTH_TOKEN,
         )
 
     async def _send_plain_email(self, message: MessageSchema):
@@ -56,3 +62,20 @@ class NotificationService:
         )
 
         self.tasks.add_task(lambda: asyncio.run(self._send_html_email(message, template_name)))
+
+    # ✅ FIXED: SMS must be an instance method INSIDE the class
+    def send_sms(self, to: str, body: str):
+        if not to:
+            print("❌ No phone number found. SMS not sent.")
+            return
+
+        print(f"📱 Sending SMS to: {to}")
+        try:
+            message = self.twilio_client.messages.create(
+                body=body,
+                from_=notification_settings.TWILIO_NUMBER,
+                to=to
+            )
+            print(f"✅ SMS sent successfully: SID={message.sid}")
+        except Exception as e:
+            print(f"❌ Failed to send SMS: {e}")
