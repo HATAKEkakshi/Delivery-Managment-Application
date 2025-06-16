@@ -27,6 +27,7 @@ async def login_seller(request_form:Annotated[OAuth2PasswordRequestForm,Depends(
 @seller.get("/verify")
 async def verify_seller_email(token:str,service:SellerServiceDep):
     await service.verify_email(token)
+    return {"detail":"Email verified successfully"}
 @seller.get("/forgot_password")
 async def verify_forgot_password(email:EmailStr,service:SellerServiceDep):
     await service.send_password_reset_link(email,router_prefix="/seller")

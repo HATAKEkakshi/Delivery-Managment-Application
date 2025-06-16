@@ -61,7 +61,9 @@ class ShipmentRead(BaseShipment):
 
     class Config:
         orm_mode = True
-
+class ShipmentReview(BaseModel):
+    rating: int=Field(ge=1, le=5)
+    comment: str | None = Field(default=None)
 # --- Delivery Partner ---
 class BaseDeliveryPartner(BaseModel):
     name: str

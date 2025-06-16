@@ -1,11 +1,12 @@
 from uuid import UUID
+from helper.utils import decode_acess_token, decode_url_safe_token
 from fastapi import BackgroundTasks, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from services.shipmentevent import ShipmentEventService
 from services.delivery_partner import DeliveryPartnerService
 from services.base import BaseService
-from database.model import DeliveryPartner, Seller, Shipment
-from schemas.schemas import ShipmentCreate, ShipmentRead, ShipmentStatus, ShipmentUpdate
+from database.model import DeliveryPartner, Review, Seller, Shipment
+from schemas.schemas import ShipmentCreate, ShipmentRead, ShipmentReview, ShipmentStatus, ShipmentUpdate
 from datetime import datetime, timedelta
 from database.redis import get_shipment_verification_code
 
@@ -78,7 +79,23 @@ class ShipmentService(BaseService):
 
         return await self._update(shipment)
 
-
+    async def rate(self,token:str, rating:int,comment:str):
+        token_data = decode_url_safe_token(token)
+        print("Here is your token ######################----->>>>>>:",token_data)
+        if token_data is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired access token"
+            )
+        shipment=await self.get(UUID(token_data["id"]))
+        new_review=Review(
+           rating=rating,
+           comment=comment,
+            shipment_id=shipment.id,
+        )
+        self.session.add(new_review)
+        await self.session.commit()
+        
 
     async def cancel(self, id: UUID, seller: Seller):
         shipment = await self.get(id)

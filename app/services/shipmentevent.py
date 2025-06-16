@@ -1,10 +1,12 @@
 from random import randint
 import time
+from helper.utils import generate_url_safe_token
 from database.redis import get_shipment_verification_code,add_shipment_verification_code
 from schemas.schemas import ShipmentStatus
 from database.model import Shipment, ShipmentEvent
 from services.base import BaseService
 from services.notification import NotificationService
+from database.config import app_settings
 
 class ShipmentEventService(BaseService):
     def __init__(self, session,tasks):
@@ -72,6 +74,9 @@ class ShipmentEventService(BaseService):
 
             case ShipmentStatus.delivered:
                 subject = "Shipment Delivered"
+                context["seller"] = shipment.seller.name
+                token=generate_url_safe_token({"id":str(shipment.id)})
+                context["review_url"]=f"http://{app_settings.APP_DOMAIN}/shipment/review?token={token}"
                 template_name = "mail_delivered.html"
 
             case ShipmentStatus.out_for_delivery:
