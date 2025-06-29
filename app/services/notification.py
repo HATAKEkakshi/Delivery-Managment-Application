@@ -63,7 +63,6 @@ class NotificationService:
 
         self.tasks.add_task(lambda: asyncio.run(self._send_html_email(message, template_name)))
 
-    # ✅ FIXED: SMS must be an instance method INSIDE the class
     def send_sms(self, to: str, body: str):
         if not to:
             print("❌ No phone number found. SMS not sent.")

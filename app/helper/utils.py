@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta,timezone
 
 from itsdangerous import BadSignature, Serializer, SignatureExpired, URLSafeSerializer, URLSafeTimedSerializer
-from database.config import security_settings
+from app.database.config import security_settings
 from pathlib import Path
 import jwt
 from uuid import uuid4

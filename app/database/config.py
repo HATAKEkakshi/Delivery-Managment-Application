@@ -24,7 +24,8 @@ class DatabaseSettings(BaseSettings):
             f"postgresql+asyncpg://{self.POSTGRES_USER}:{password_encoded}"
             f"@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
         )
-
+    def REDIS_URL(self, db) -> str:
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}/{db}"
     model_config = _base_config
 class SecuritySettings(BaseSettings):
     JWT_SECRET: str
@@ -55,4 +56,4 @@ db_settings = DatabaseSettings()
 security_settings = SecuritySettings()
 notification_settings= NotificationSettings()
 app_settings=AppSettings()
-print("🔍 Loaded Notification Settings from .env:", NotificationSettings().model_dump())
+

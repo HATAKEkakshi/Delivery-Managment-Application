@@ -86,7 +86,7 @@ class UserService(BaseService):
             token_data = decode_url_safe_token(token, salt="password-reset", expiry=timedelta(days=1))
             if not token_data:
                 return False
-            user = await self._get(UUID(token_data["id"]))  # ✅ FIXED
+            user = await self._get(UUID(token_data["id"]))  
             user.password_hash = password_context.hash(password)
             await self._update(user)
             return True
