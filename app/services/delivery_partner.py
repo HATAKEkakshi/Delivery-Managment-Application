@@ -1,14 +1,14 @@
 from fastapi import HTTPException, status
 from sqlalchemy import Sequence
 from sqlmodel import select, any_
-from database.model import DeliveryPartner, Shipment
-from schemas.schemas import DeliveryPartnerCreate
-from services.user import UserService
+from app.database.model import DeliveryPartner, Shipment
+from app.schemas.schemas import DeliveryPartnerCreate
+from app.services.user import UserService
 
 
 class DeliveryPartnerService(UserService):
-    def __init__(self, session,tasks):
-        super().__init__(DeliveryPartner, session=session,tasks=tasks)  # DeliveryPartner is a subclass of User
+    def __init__(self, session):
+        super().__init__(DeliveryPartner, session=session)  # DeliveryPartner is a subclass of User
 
     async def add_delivery_partner(self, delivery_partner: DeliveryPartnerCreate):
         return await self._add_user(delivery_partner.model_dump(),"partner")

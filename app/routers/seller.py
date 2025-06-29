@@ -1,16 +1,16 @@
-from helper.utils import TEMPLATE_DIR
+from app.helper.utils import TEMPLATE_DIR
 from fastapi.templating import Jinja2Templates
 from pydantic import EmailStr
 from fastapi.security import OAuth2PasswordRequestForm
 from typing_extensions import Annotated
 from fastapi import APIRouter, Depends, Form,HTTPException, Request, status
-from api.dependencies import SellerServiceDep, SessionDep, get_seller_acess_token
-from database.model import Seller
-from schemas.schemas import SellerRead
-from schemas.schemas import SellerCreate
-from core.security import oauth2_scheme_seller
-from database.redis import add_jti_to_blacklist
-from database.config import app_settings
+from app.api.dependencies import SellerServiceDep, SessionDep, get_seller_acess_token
+from app.database.model import Seller
+from app.schemas.schemas import SellerRead
+from app.schemas.schemas import SellerCreate
+from app.core.security import oauth2_scheme_seller
+from app.database.redis import add_jti_to_blacklist
+from app.database.config import app_settings
 seller=APIRouter(prefix="/seller",tags=["Seller"])
 
 

@@ -1,12 +1,12 @@
 from fastapi.security import OAuth2PasswordRequestForm
 from typing_extensions import Annotated
 from fastapi import APIRouter, Depends,HTTPException, status
-from api.dependencies import DeliveryDep, get_partner_acess_token
-from database.model import DeliveryPartner
-from schemas.schemas import DeliveryPartnerRead, DeliveryPartnerUpdate
-from schemas.schemas import DeliveryPartnerCreate
-from database.redis import add_jti_to_blacklist
-from api.dependencies import DeliveryPartnerServiceDep
+from app.api.dependencies import DeliveryDep, get_partner_acess_token
+from app.database.model import DeliveryPartner
+from app.schemas.schemas import DeliveryPartnerRead, DeliveryPartnerUpdate
+from app.schemas.schemas import DeliveryPartnerCreate
+from app.database.redis import add_jti_to_blacklist
+from app.api.dependencies import DeliveryPartnerServiceDep
 partner=APIRouter(prefix="/partner",tags=["Delivery Partner"])
 
 

@@ -1,17 +1,17 @@
 from typing import Annotated
 from uuid import UUID
 from fastapi import BackgroundTasks
-from services.shipmentevent import ShipmentEventService
-from services.delivery_partner import DeliveryPartnerService
-from database.model import DeliveryPartner, Seller, Shipment
-from services.seller import SellerService
+from app.services.shipmentevent import ShipmentEventService
+from app.services.delivery_partner import DeliveryPartnerService
+from app.database.model import DeliveryPartner, Seller, Shipment
+from app.services.seller import SellerService
 from fastapi import Depends,HTTPException, status
-from helper.utils import decode_acess_token
+from app.helper.utils import decode_acess_token
 from sqlalchemy.ext.asyncio import AsyncSession
-from core.security import oauth2_scheme_seller,oauth2_scheme_partner
-from services.shipment import ShipmentService
-from database.session import get_session
-from database.redis import is_jti_blacklisted
+from app.core.security import oauth2_scheme_seller,oauth2_scheme_partner
+from app.services.shipment import ShipmentService
+from app.database.session import get_session
+from app.database.redis import is_jti_blacklisted
 
 # Type alias for the async session dependency
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
@@ -49,12 +49,12 @@ async def get_current_partner(token_data:Annotated[dict,Depends(get_partner_aces
         )
     return partner
 # Function to return an instance of ShipmentService with a session
-def get_shipment_service(session: SessionDep,tasks:BackgroundTasks) -> ShipmentService:
-    return ShipmentService(session,DeliveryPartnerService(session,tasks),ShipmentEventService(session,tasks))
-def get_seller_service(session: SessionDep,tasks:BackgroundTasks) -> SellerService:
-    return SellerService(session,tasks)
-def get_delivery_partner_service(session: SessionDep,tasks:BackgroundTasks):
-    return DeliveryPartnerService(session,tasks)
+def get_shipment_service(session: SessionDep) -> ShipmentService:
+    return ShipmentService(session,DeliveryPartnerService(session),ShipmentEventService(session))
+def get_seller_service(session: SessionDep) -> SellerService:
+    return SellerService(session)
+def get_delivery_partner_service(session: SessionDep):
+    return DeliveryPartnerService(session)
 # Type alias for injecting the ShipmentService
 ServiceDep = Annotated[ShipmentService, Depends(get_shipment_service)]
 

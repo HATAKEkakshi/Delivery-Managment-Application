@@ -4,7 +4,7 @@ from sqlalchemy.dialects import postgresql
 from datetime import datetime
 from pydantic import EmailStr
 from uuid import uuid4, UUID
-from schemas.schemas import ShipmentStatus
+from app.schemas.schemas import ShipmentStatus
 
 
 class User(SQLModel):

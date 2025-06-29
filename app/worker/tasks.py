@@ -6,30 +6,33 @@ from app.database.config import db_settings, notification_settings
 from app.helper.utils import TEMPLATE_DIR
 from twilio.rest import Client
 
-# Configure FastMail
+# --- Mail Configuration ---
 fast_mail = FastMail(
     ConnectionConfig(
-        **notification_settings.model_dump(exclude={"TWILIO_SID", "TWILIO_AUTH_TOKEN", "TWILIO_NUMBER"}),
+        **notification_settings.model_dump(
+            exclude={"TWILIO_SID", "TWILIO_AUTH_TOKEN", "TWILIO_NUMBER"}
+        ),
         TEMPLATE_FOLDER=TEMPLATE_DIR,
     )
 )
 
-# Configure Twilio client
+# --- Twilio Client Setup ---
 twilio_client = Client(
     notification_settings.TWILIO_SID,
     notification_settings.TWILIO_AUTH_TOKEN,
 )
 
-# Initialize Celery
-app = Celery(
-    "api_tasks",
+# --- Celery App ---
+celery_app = Celery(
+    "notifications",
     broker=db_settings.REDIS_URL(9),
     backend=db_settings.REDIS_URL(9),
+    broker_connection_retry_on_startup=True,
 )
 
-# ✅ Plain text email task
-@app.task
-def send_mail(recipients: list[str], subject: str, body: str):
+# ✅ Plain Text Email Task
+@celery_app.task(name="notifications.send_plain_email")
+def send_plain_email(recipients: list[str], subject: str, body: str):
     try:
         message = MessageSchema(
             recipients=recipients,
@@ -38,24 +41,21 @@ def send_mail(recipients: list[str], subject: str, body: str):
             subtype=MessageType.plain,
         )
         asyncio.run(fast_mail.send_message(message))
-        return "Plain text email sent successfully"
+        return "✅ Plain text email sent"
     except Exception as e:
         print(f"❌ Error sending plain text email: {e}")
-        return f"Failed to send plain text email: {e}"
+        return f"❌ Failed: {e}"
 
-# ✅ HTML email with Jinja2 template task
-@app.task
-def send_email_template_task(email: str, subject: str, context: dict, template_name: str):
+# ✅ HTML Email Task (with template)
+@celery_app.task(name="notifications.send_template_email")
+def send_email_template(email: str, subject: str, context: dict, template_name: str):
     if not email:
-        print("❌ No email found. Notification not sent.")
-        return "No email provided"
+        return "❌ No recipient email provided"
 
     try:
-        print(f"📬 Sending HTML email to: {email} using template: {template_name}")
         env = Environment(loader=FileSystemLoader(TEMPLATE_DIR))
         template = env.get_template(template_name)
-        rendered_html = template.render(context)
-        print("🔍 Rendered HTML content:\n", rendered_html)
+        rendered = template.render(context)
 
         message = MessageSchema(
             subject=subject,
@@ -65,27 +65,24 @@ def send_email_template_task(email: str, subject: str, context: dict, template_n
         )
 
         asyncio.run(fast_mail.send_message(message=message, template_name=template_name))
-        return "HTML email sent successfully"
+        return "✅ HTML email sent"
     except Exception as e:
-        print(f"❌ Error sending template email: {e}")
-        return f"Failed to send HTML email: {e}"
+        print(f"❌ Error sending HTML email: {e}")
+        return f"❌ Failed: {e}"
 
-# ✅ Twilio SMS task
-@app.task
+# ✅ SMS Task
+@celery_app.task(name="notifications.send_sms")
 def send_sms(to: str, body: str):
     if not to:
-        print("❌ No phone number found. SMS not sent.")
-        return "No phone number provided"
+        return "❌ No phone number provided"
 
-    print(f"📱 Sending SMS to: {to}")
     try:
         message = twilio_client.messages.create(
             body=body,
             from_=notification_settings.TWILIO_NUMBER,
             to=to
         )
-        print(f"✅ SMS sent successfully: SID={message.sid}")
-        return f"SMS sent: SID={message.sid}"
+        return f"✅ SMS sent: SID={message.sid}"
     except Exception as e:
-        print(f"❌ Failed to send SMS: {e}")
-        return f"Failed to send SMS: {e}"
+        print(f"❌ SMS send error: {e}")
+        return f"❌ Failed: {e}"

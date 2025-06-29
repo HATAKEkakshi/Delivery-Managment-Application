@@ -1,21 +1,22 @@
 from datetime import timedelta
 from uuid import UUID
-from services.notification import NotificationService
+from app.services.notification import NotificationService
 from fastapi import BackgroundTasks, HTTPException
 from sqlmodel import SQLModel, select
-from database.model import User
-from helper.utils import generate_access_token,generate_url_safe_token,decode_url_safe_token
-from services.base import BaseService
+from app.database.model import User
+from app.helper.utils import generate_access_token,generate_url_safe_token,decode_url_safe_token
+from app.services.base import BaseService
 from sqlalchemy.ext.asyncio import AsyncSession
 from passlib.context import CryptContext
 from fastapi import status,HTTPException
-from database.config import app_settings
+from app.database.config import app_settings
+from app.worker.tasks import send_sms,send_email_template
 password_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 class UserService(BaseService):
-        def __init__(self, model:User,session: AsyncSession,tasks:BackgroundTasks):
+        def __init__(self, model:User,session: AsyncSession):
             self.model= model
             self.session = session
-            self.notification_service = NotificationService(tasks)
+            #self.notification_service = NotificationService(tasks)
         async def _add_user(self,data:dict,router_prefix:str):
              user=self.model(
                   **data,
@@ -27,7 +28,7 @@ class UserService(BaseService):
                   "email":user.email,
                   "id":str(user.id),
              })
-             self.notification_service.send_email_template(
+             send_email_template.delay(
                     email=email,
                     subject="Verify your email",
                     context={
@@ -73,7 +74,7 @@ class UserService(BaseService):
             token=generate_url_safe_token({
                  "id":str(user.id)
             },salt="password-reset")
-            self.notification_service.send_email_template(
+            send_email_template.delay(
                 email=email,
                 subject="Password Reset Request",
                 context={

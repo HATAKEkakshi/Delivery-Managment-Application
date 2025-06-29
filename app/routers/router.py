@@ -2,14 +2,14 @@
 
 from typing_extensions import Annotated
 from uuid import UUID
-from database.config import app_settings
-from helper.utils import TEMPLATE_DIR
+from app.database.config import app_settings
+from app.helper.utils import TEMPLATE_DIR
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
-from api.dependencies import DeliveryPartnerServiceDep, ServiceDep,DeliveryDep
-from schemas.schemas import ShipmentCreate, ShipmentReview,ShipmentRead, ShipmentUpdate
-from api.dependencies import SellerDep
+from app.api.dependencies import DeliveryPartnerServiceDep, ServiceDep,DeliveryDep
+from app.schemas.schemas import ShipmentCreate, ShipmentReview,ShipmentRead, ShipmentUpdate
+from app.api.dependencies import SellerDep
 router = APIRouter(prefix="/shipment",tags=["Shipment"])
 templates=Jinja2Templates(TEMPLATE_DIR)
 @router.get("/", response_model=ShipmentRead)

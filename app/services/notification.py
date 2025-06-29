@@ -1,8 +1,8 @@
 from jinja2 import Environment, FileSystemLoader
 from fastapi_mail import ConnectionConfig, FastMail, MessageSchema, MessageType
-from database.config import notification_settings
+from app.database.config import notification_settings
 from fastapi import BackgroundTasks
-from helper.utils import TEMPLATE_DIR
+from app.helper.utils import TEMPLATE_DIR
 from twilio.rest import Client
 
 import asyncio

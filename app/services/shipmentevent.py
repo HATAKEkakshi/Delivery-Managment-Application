@@ -1,17 +1,17 @@
 from random import randint
 import time
-from helper.utils import generate_url_safe_token
-from database.redis import get_shipment_verification_code,add_shipment_verification_code
-from schemas.schemas import ShipmentStatus
-from database.model import Shipment, ShipmentEvent
-from services.base import BaseService
-from services.notification import NotificationService
-from database.config import app_settings
-
+from app.helper.utils import generate_url_safe_token
+from app.database.redis import get_shipment_verification_code,add_shipment_verification_code
+from app.schemas.schemas import ShipmentStatus
+from app.database.model import Shipment, ShipmentEvent
+from app.services.base import BaseService
+from app.services.notification import NotificationService
+from app.database.config import app_settings
+from app.worker.tasks import send_sms,send_email_template
 class ShipmentEventService(BaseService):
-    def __init__(self, session,tasks):
+    def __init__(self, session):
         super().__init__(ShipmentEvent, session)
-        self.notification_service = NotificationService(tasks)
+       # self.notification_service = NotificationService(tasks)
 
     async def add(self, shipment: Shipment, location: int = None, status: ShipmentStatus = None, description: str = None) -> ShipmentEvent:
         if not location or not status:
@@ -85,7 +85,7 @@ class ShipmentEventService(BaseService):
                 code=randint(100_000,999_999)
                 await add_shipment_verification_code(shipment.id,code)
                 if shipment.client_contact_phone:
-                    self.notification_service.send_sms(
+                    send_sms.delay(
                         to=shipment.client_contact_phone,
                         body=f"Your shipment {shipment.id} is out for delivery. Your verification code is: {code}"
                     )
@@ -99,7 +99,7 @@ class ShipmentEventService(BaseService):
                 (f"⚠️ No email template configured for status: {status}")
                 return
 
-        self.notification_service.send_email_template(
+        send_email_template.delay(
             email=email,
             subject=subject,
             context=context,

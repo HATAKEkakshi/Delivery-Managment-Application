@@ -1,6 +1,6 @@
 from uuid import UUID
 from redis.asyncio import Redis
-from database.config import db_settings
+from app.database.config import db_settings
 
 _token_blacklist=Redis(
     host=db_settings.REDIS_HOST,

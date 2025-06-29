@@ -1,11 +1,11 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from scalar_fastapi import get_scalar_api_reference
-from database.session import create_db_tables
+from app.database.session import create_db_tables
 from fastapi import APIRouter
-from routers.router import router
-from routers.seller import seller
-from routers.delivery_partner import partner
+from app.routers.router import router
+from app.routers.seller import seller
+from app.routers.delivery_partner import partner
 
 master_router = APIRouter()
 master_router.include_router(router)
