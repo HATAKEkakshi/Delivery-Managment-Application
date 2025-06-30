@@ -1,15 +1,18 @@
+# app/schemas/schemas.py
 from pydantic import BaseModel, EmailStr, Field
 from uuid import UUID
-from enum import Enum
 from datetime import datetime
 
-# --- Enums ---
-class ShipmentStatus(str, Enum):
-    placed = "placed"
-    in_transit = "in_transit"
-    delivered = "delivered"
-    out_for_delivery = "out_for_delivery"
-    cancelled = "cancelled"
+# Import enums from models to avoid circular imports
+from app.database.model import ShipmentStatus, TagName
+
+# --- Tag ---
+class TagRead(BaseModel):
+    name: str
+    instruction: str
+
+    class Config:
+        from_attributes = True
 
 # --- Seller ---
 class BaseSeller(BaseModel):
@@ -18,7 +21,7 @@ class BaseSeller(BaseModel):
 
 class SellerRead(BaseSeller):
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class SellerCreate(BaseSeller):
     password: str
@@ -32,7 +35,7 @@ class ShipmentEventRead(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # --- Shipment ---
 class BaseShipment(BaseModel):
@@ -42,28 +45,29 @@ class BaseShipment(BaseModel):
 
 class ShipmentCreate(BaseShipment):
     client_email_id: EmailStr 
-    client_contact_phone:str  | None = Field(default=None)
-    
+    client_contact_phone: str | None = Field(default=None)
 
 class ShipmentUpdate(BaseModel):
     location: int | None = Field(default=None)
-    description: str | None = Field(default=None)  # ✅ Fixed spelling here
+    description: str | None = Field(default=None)
     status: ShipmentStatus | None = None
     estimated_delivery_date: datetime | None = None
     verification_code: str | None = Field(default=None)
-
 
 class ShipmentRead(BaseShipment):
     id: UUID
     timeline: list[ShipmentEventRead]
     estimated_delivery_date: datetime
     seller: SellerRead
+    tags: list[TagRead]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
 class ShipmentReview(BaseModel):
-    rating: int=Field(ge=1, le=5)
+    rating: int = Field(ge=1, le=5)
     comment: str | None = Field(default=None)
+
 # --- Delivery Partner ---
 class BaseDeliveryPartner(BaseModel):
     name: str
@@ -73,9 +77,9 @@ class BaseDeliveryPartner(BaseModel):
 
 class DeliveryPartnerRead(BaseDeliveryPartner):
     class Config:
-        orm_mode = True
+        from_attributes = True
 
-class DeliveryPartnerUpdate(BaseDeliveryPartner):
+class DeliveryPartnerUpdate(BaseModel):
     serviceable_zip_codes: list[int] | None = Field(default=None)
     max_handling_capacity: int | None = Field(default=None)
 

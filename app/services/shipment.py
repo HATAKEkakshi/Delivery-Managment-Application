@@ -1,12 +1,17 @@
+# app/services/shipment.py
 from uuid import UUID
+from app.core.exceptions import ClientNotAuthorized, EntityNotFound, InvalidToken
 from app.helper.utils import decode_acess_token, decode_url_safe_token
 from fastapi import BackgroundTasks, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.shipmentevent import ShipmentEventService
 from app.services.delivery_partner import DeliveryPartnerService
 from app.services.base import BaseService
-from app.database.model import DeliveryPartner, Review, Seller, Shipment
-from app.schemas.schemas import ShipmentCreate, ShipmentRead, ShipmentReview, ShipmentStatus, ShipmentUpdate
+
+# Import from models instead of schemas
+from app.database.model import DeliveryPartner, Review, Seller, Shipment, TagName, ShipmentStatus
+from app.schemas.schemas import ShipmentCreate, ShipmentRead, ShipmentReview, ShipmentUpdate
+
 from datetime import datetime, timedelta
 from app.database.redis import get_shipment_verification_code
 
@@ -17,7 +22,10 @@ class ShipmentService(BaseService):
         self.event_service = event_service
 
     async def get(self, id: UUID) -> Shipment | None:
-        return await self._get(id)
+        shipment = await self._get(id)
+        if not shipment:
+            raise EntityNotFound()
+        return shipment
 
     async def add(self, shipment_create: ShipmentCreate, seller: Seller) -> Shipment:
         new_shipment = Shipment(
@@ -40,7 +48,6 @@ class ShipmentService(BaseService):
             status=ShipmentStatus.placed,
             description=f"Assigned to {partner.name}."
         )
-        # No need to append or refresh timeline manually
         return shipment
 
     async def update(
@@ -52,17 +59,14 @@ class ShipmentService(BaseService):
     ):
         shipment = await self._get(id)
         if shipment is None:
-            raise HTTPException(status_code=404, detail="Shipment not found")
+            raise EntityNotFound()
 
         if shipment.delivery_partner_id != partner.id:
-            raise HTTPException(status_code=403, detail="Not authorized to update this shipment")
+            raise ClientNotAuthorized()
         if shipment_update.status == ShipmentStatus.delivered:
             code= await get_shipment_verification_code(shipment.id)
             if code!=shipment_update.verification_code:
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Client not authorized"
-                    )
+                raise ClientNotAuthorized()
         # Apply update
         for key, value in shipment_update.model_dump(exclude_unset=True,exclude=["verification_code"]).items():
             if hasattr(shipment, key):
@@ -79,14 +83,47 @@ class ShipmentService(BaseService):
 
         return await self._update(shipment)
 
+    async def add_tag(self, id: UUID, tag_name: TagName):
+        shipment = await self.get(id)
+        if shipment is None:
+            raise HTTPException(status_code=404, detail="Shipment not found")
+
+        # Get the tag from the database
+        tag = await tag_name.tag(self.session)
+        if tag is None:
+            raise EntityNotFound()
+        
+        # Check if tag is already associated with shipment to avoid duplicates
+        if tag in shipment.tags:
+            raise HTTPException(status_code=400, detail=f"Tag '{tag_name.value}' already associated with shipment")
+        
+        shipment.tags.append(tag)
+        await self._update(shipment)
+        return shipment
+
+    async def remove_tag(self, id: UUID, tag_name: TagName):
+        shipment = await self.get(id)
+        if shipment is None:
+            raise EntityNotFound()
+
+        # Get the tag from the database
+        tag = await tag_name.tag(self.session)
+        if tag is None:
+            raise EntityNotFound()
+
+        try:
+            shipment.tags.remove(tag)
+        except ValueError:
+            raise EntityNotFound()
+
+        await self._update(shipment)
+        return shipment
+
     async def rate(self,token:str, rating:int,comment:str):
         token_data = decode_url_safe_token(token)
         print("Here is your token ######################----->>>>>>:",token_data)
         if token_data is None:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid or expired access token"
-            )
+            raise InvalidToken()
         shipment=await self.get(UUID(token_data["id"]))
         new_review=Review(
            rating=rating,
@@ -111,7 +148,6 @@ class ShipmentService(BaseService):
         )
         shipment.timeline.append(event)
         return shipment
-        # No need to refresh or append manually
 
     async def delete(self, id: int) -> None:
         await self._delete(await self.get(id))

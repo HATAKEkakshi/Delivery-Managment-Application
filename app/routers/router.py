@@ -3,6 +3,8 @@
 from typing_extensions import Annotated
 from uuid import UUID
 from app.database.config import app_settings
+from app.database.model import TagName
+from app.database.session import SessionDep
 from app.helper.utils import TEMPLATE_DIR
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -14,11 +16,8 @@ router = APIRouter(prefix="/shipment",tags=["Shipment"])
 templates=Jinja2Templates(TEMPLATE_DIR)
 @router.get("/", response_model=ShipmentRead)
 async def get_shipment(id: UUID, service: ServiceDep):
-    print("here is your argument:",await service.get(id))
-    shipment = await service.get(id)
-    if not shipment:
-        raise HTTPException(status_code=404, detail="Shipment not found")
-    return shipment
+    return await service.get(id)
+
 @router.get("/track")
 async def get_tracking(id: UUID, service: ServiceDep,request:Request):
     shipment=await service.get(id)
@@ -49,8 +48,17 @@ async def patch_shipment(
         raise HTTPException(status_code=400, detail="No fields to update")
 
     return await service.update(id, shipment_update,partner, partner_service)
+@router.get("/tagged",response_model=list[ShipmentRead])
+async def get_tagged_shipments(tag_name: TagName, session :SessionDep):
+    tag=await tag_name.tag(session)
+    return tag.shipments
 
-
+@router.get("/tag",response_model=ShipmentRead)
+async def add_tag_to_shipment(id: UUID,tag_name: TagName,service: ServiceDep):
+   return await service.add_tag(id, tag_name)
+@router.delete("/tag",response_model=ShipmentRead)
+async def remove_tag_from_shipment(id: UUID,tag_name: TagName,service: ServiceDep,):
+   return await service.remove_tag(id, tag_name)
 @router.get("/cancel",response_model=ShipmentRead)
 async def cancel_shipment(id: UUID, seller:SellerDep,service: ServiceDep):
     return await service.cancel(id,seller)
