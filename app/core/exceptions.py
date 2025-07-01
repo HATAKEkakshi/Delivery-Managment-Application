@@ -26,7 +26,7 @@ def _get_handler(status:int, detail:str):
     """Helper function to create an exception handler"""
     def handler(request:Request, exception:Exception):
         from rich import print,panel
-        print(panel(f"Error: {detail}", title="Exception Occurred"))
+        print(panel.Panel(f"Handled:{exception.__class__.__name__}"))
         raise HTTPException(
             status_code=status,
             detail=detail
@@ -41,4 +41,5 @@ def add_exception_handlers(app:FastAPI):
     app.add_exception_handler(DeliveryPartnerCapacityExceeded,_get_handler(status.HTTP_503_SERVICE_UNAVAILABLE,"Delivery partner capacity exceeded"))
 def add_exception_handlers_to_app(app:FastAPI):
     for subclass in FastShipError.__subclasses__():
-        app.add_exception_handler(subclass, _get_handler(subclass.status, subclass.__doc__ ))
+        doc = subclass.__doc__ or "An error occurred"
+        app.add_exception_handler(subclass, _get_handler(subclass.status, doc))
