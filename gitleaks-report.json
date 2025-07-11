@@ -1,0 +1,23 @@
+[
+ {
+  "RuleID": "generic-api-key",
+  "Description": "Detected a Generic API Key, potentially exposing access to various services and sensitive operations.",
+  "StartLine": 9,
+  "EndLine": 9,
+  "StartColumn": 2,
+  "EndColumn": 76,
+  "Match": "JWT_SECRET=12a53bf094aa46a826f4dc56fdb2bc04be2d5b1f8f1eff1e07372de240e8628d",
+  "Secret": "12a53bf094aa46a826f4dc56fdb2bc04be2d5b1f8f1eff1e07372de240e8628d",
+  "File": ".env",
+  "SymlinkFile": "",
+  "Commit": "64bfea7aa5c2b870d2aac49b45dbdf5bc0dd0fa1",
+  "Link": "https://github.com/HATAKEkakshi/Fastapi-backend/blob/64bfea7aa5c2b870d2aac49b45dbdf5bc0dd0fa1/.env#L9",
+  "Entropy": 3.8672435,
+  "Author": "HATAKEkakshi",
+  "Email": "hemant.kumar40fea@gmail.com",
+  "Date": "2025-06-08T23:50:33Z",
+  "Message": "succesfully added logout feature",
+  "Tags": [],
+  "Fingerprint": "64bfea7aa5c2b870d2aac49b45dbdf5bc0dd0fa1:.env:generic-api-key:9"
+ }
+]

@@ -20,15 +20,7 @@ async def lifespan_handler(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan_handler)
 app.include_router(master_router)
-def handler(request,exception):
-    return JSONResponse(
-        status_code=400,
-        content={"detail": "Invalid or expired access token"}
-    )
-app.add_exception_handler(
-    InvalidToken,
-    handler
-)
+
 @app.get("/scalar", include_in_schema=False)
 def get_scalar_docs():
     return get_scalar_api_reference(
