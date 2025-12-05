@@ -12,8 +12,30 @@ from app.database.model import SQLModel
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from unittest.mock import patch
 
+# Monkey patch ARRAY type for SQLite compatibility in tests
+from sqlalchemy.types import TypeDecorator, Text
+import json
+
+class ArrayType(TypeDecorator):
+    impl = Text
+    
+    def process_bind_param(self, value, dialect):
+        if value is not None:
+            return json.dumps(value)
+        return value
+    
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            return json.loads(value)
+        return value
+
+# Override ARRAY for testing
+original_array = postgresql.ARRAY
+postgresql.ARRAY = lambda *args, **kwargs: ArrayType()
+
 engine=create_async_engine(
     url="sqlite+aiosqlite:///:memory:",
+    echo=False,
 )
 test_session=async_sessionmaker(
         bind=engine,

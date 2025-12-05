@@ -1,5 +1,5 @@
 # app/database/model.py
-from sqlalchemy import Column, INTEGER, select, JSON, Text
+from sqlalchemy import Column, ARRAY, INTEGER, select, JSON, Text
 from sqlmodel import SQLModel, Field, Relationship
 from sqlalchemy.dialects import postgresql
 from datetime import datetime
@@ -57,7 +57,7 @@ class DeliveryPartner(User, table=True):
     __tablename__ = "delivery_partner"
     id: UUID = Field(sa_column=Column(postgresql.UUID, default=uuid4, primary_key=True))
     created_at: datetime = Field(sa_column=Column(postgresql.TIMESTAMP, default=datetime.now))
-    serviceable_zip_codes: list[int] = Field(sa_column=Column(JSON))
+    serviceable_zip_codes: list[int] = Field(sa_column=Column(postgresql.ARRAY(INTEGER)))
     max_handling_capacity: int
     shipments: list["Shipment"] = Relationship(back_populates="delivery_partner", sa_relationship_kwargs={"lazy": "selectin"})
 
