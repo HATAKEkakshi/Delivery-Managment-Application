@@ -86,3 +86,7 @@ def send_sms(to: str, body: str):
     except Exception as e:
         print(f"❌ SMS send error: {e}")
         return f"❌ Failed: {e}"
+@celery_app.task(name="log")
+def add_log(log: str)->None:
+    with open("file.log","a") as f:
+        f.write(f"{log}\n")

@@ -1,0 +1,4 @@
+Request: GET http://127.0.0.1:8009/docs - Response Status: 200 - Duration: 0.0000 seconds
+Request: GET http://127.0.0.1:8009/openapi.json - Response Status: 200 - Duration: 0.0300 seconds
+Request: GET http://127.0.0.1:8009/docs - Response Status: 200 - Duration: 0.0000 seconds
+Request: GET http://127.0.0.1:8009/openapi.json - Response Status: 200 - Duration: 0.0000 seconds
